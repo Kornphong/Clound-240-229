@@ -3,7 +3,7 @@ import React from "react";
 const Pokeinfo = ({ data }) => {
    
     return (
-        <>
+        <div>
         {
             (!data) ? "" : (
                 <>
@@ -37,7 +37,7 @@ const Pokeinfo = ({ data }) => {
             )
         }
 
-        </>
+        </div>
     )
 }
 export default Pokeinfo

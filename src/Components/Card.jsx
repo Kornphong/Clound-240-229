@@ -2,7 +2,7 @@ import React from "react";
 const Card = ({ pokemon, loading,infoPokemon}) => {
    // console.log(pokemon);
     return (
-        <>
+        <div>
         {
             loading ? <h1>Loading...</h1> :
                 pokemon.map((item) => {
@@ -18,7 +18,7 @@ const Card = ({ pokemon, loading,infoPokemon}) => {
                 })
         }
 
-        </>
+        </div>
     )
 }
 export default Card;

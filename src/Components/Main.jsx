@@ -1,62 +1,75 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Card from "./Card";
 import Pokeinfo from "./Pokeinfo";
 import axios from "axios";
-import { useState } from "react";
-import { useEffect } from "react";
-const Main=()=>{
-    const [pokeData,setPokeData]=useState([]);
-    const [loading,setLoading]=useState(true);
-    const [url,setUrl]=useState("https://pokeapi.co/api/v2/pokemon/")
-    const [nextUrl,setNextUrl]=useState();
-    const [prevUrl,setPrevUrl]=useState();
-    const [pokeDex,setPokeDex]=useState();
-
-    const pokeFun=async()=>{
-        setLoading(true)
-        const res=await axios.get(url);
-        setNextUrl(res.data.next);
-        setPrevUrl(res.data.previous);
-        getPokemon(res.data.results)
-        setLoading(false)
-    }
-    const getPokemon=async(res)=>{
-       res.map(async(item)=>{
-          const result=await axios.get(item.url)
-          setPokeData(state=>{
-              state=[...state,result.data]
-              state.sort((a,b)=>a.id>b.id?1:-1)
-              return state;
-          })
-       })   
-    }
-    useEffect(()=>{
-        pokeFun();
-    },[url])
-    return(
-        <>
-            <div className="container">
-                <div className="left-content">
-                    <Card pokemon={pokeData} loading={loading} infoPokemon={poke=>setPokeDex(poke)}/>
-                    
-                    <div className="btn-group">
-                        {  prevUrl && <button onClick={()=>{
-                            setPokeData([])
-                           setUrl(prevUrl) 
-                        }}>Previous</button>}
-
-                        { nextUrl && <button onClick={()=>{
-                            setPokeData([])
-                            setUrl(nextUrl)
-                        }}>Next</button>}
-
-                    </div>
-                </div>
-                <div className="right-content">
-                   <Pokeinfo data={pokeDex}/>
-                </div>
+const Main = () => {
+    const [pokeData, setPokeData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [pokeDex, setPokeDex] = useState("");
+  
+    useEffect(() => {
+      const fetchAllPokemon = async () => {
+        try {
+          setLoading(true);
+  
+          // Fetch all Pokémon data from the API
+          const response = await axios.get("https://pokeapi.co/api/v2/pokemon?limit=2000");
+  
+          // Extract the individual URLs for each Pokémon
+          const pokemonUrls = response.data.results.map((pokemon) => pokemon.url);
+  
+          // Fetch details for each Pokémon
+          const pokemonDetails = await Promise.all(
+            pokemonUrls.map(async (url) => {
+              const result = await axios.get(url);
+              return result.data;
+            })
+          );
+  
+          setPokeData(pokemonDetails);
+          setLoading(false);
+        } catch (error) {
+          console.error("Error fetching Pokémon data:", error);
+          setLoading(false);
+        }
+      };
+  
+      fetchAllPokemon();
+    }, []);
+  
+    const handleSearch = (event) => {
+      setSearchTerm(event.target.value);
+    };
+  
+    const filteredPokemon = pokeData.filter((pokemon) =>
+      pokemon.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  
+    return (
+      <>
+        <div className="container">
+          <div className="left-content">
+            <div className="search-container">
+              <input
+                type="text"
+                placeholder="Search Pokemon"
+                value={searchTerm}
+                onChange={handleSearch}
+              />
             </div>
-        </>
-    )
-}
-export default Main;
+            <Card
+              pokemon={filteredPokemon}
+              loading={loading}
+              infoPokemon={(poke) => setPokeDex(poke)}
+            />
+          </div>
+          <div className="right-content">
+            <Pokeinfo data={pokeDex} />
+          </div>
+        </div>
+      </>
+    );
+  };
+  
+  export default Main;
